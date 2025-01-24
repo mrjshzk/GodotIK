@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GodotIKConstraint" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Abstract base class for inverse kinematics constraints.
+	</brief_description>
+	<description>
+		GodotIKConstraint offers a flexible interface for implementing custom constraints that affect how bones behave in an IK chain.
+		Constraints can enforce joint limits, simulate realistic joint behavior, or introduce specialized adjustments during the IK solving process.
+		Subclasses should override the [method apply] method to define how the constraint alters bone positions and to implement any constraint-specific logic.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="apply" qualifiers="virtual const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="pos_parent_bone" type="Vector3" />
+			<param index="1" name="pos_bone" type="Vector3" />
+			<param index="2" name="pos_child_bone" type="Vector3" />
+			<param index="3" name="chain_direction" type="int" />
+			<description>
+				Adjusts the positions of bones in an IK chain by applying the constraint.
+
+				Parameters:
+				- [param pos_parent_bone]: Position of the parent bone.
+				- [param pos_bone]: Position of the bone currently being constrained.
+				- [param pos_child_bone]: Position of the child bone.
+				- [param chain_direction]: Direction along the IK chain. Use the provided constants [enum GodotIKConstraint.FORWARD] or [enum GodotIKConstraint.BACKWARD] for clarity. Many constraints need only be applied in one direction, allowing for an early return.
+
+				Returns a [code]PackedVector3Array[/code] containing the positions [code][pos_parent_bone, pos_bone, pos_child_bone][/code] for the current bone index.
+
+				[b]Note:[/b]
+				- If the bone (referenced by [member GodotIKEffector.bone_id]) has no parent or child, the corresponding [param pos_parent_bone] or [param pos_child_bone] will be [code]Vector3.ZERO[/code].
+				- If the bone has a parent but that parent lies outside the affected chain, the supplied [param pos_parent_bone] is used as provided; however, the first element of the returned [code]PackedVector3Array[/code] will be ignored.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bone_id" type="int" setter="set_bone_id" getter="get_bone_id" default="0">
+			Specifies the index of the bone in the skeleton where the constraint should be applied.
+		</member>
+	</members>
+	<constants>
+		<constant name="BACKWARD" value="-1" enum="Dir">
+			Indicates that the constraint is applied in the backward pass (from leaf to root) along the IK chain, typically giving greater influence to bones higher in the chain.
+		</constant>
+		<constant name="FORWARD" value="1" enum="Dir">
+			Indicates that the constraint is applied in the forward pass (from root to leaf) along the IK chain, typically giving greater influence to bones lower in the chain.
+		</constant>
+	</constants>
+</class>
