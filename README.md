@@ -29,4 +29,4 @@ In the meantime, to use this, you can run
 2. git submodule init # for godot-cpp
 3. git submodule update # for godot-cpp
 4. scons # compile
-5. cp -r godot_project/addons/libik <your-project-path>/addons
+5. cp -r godot_project/addons/libik \<your-project-path\>/addons
