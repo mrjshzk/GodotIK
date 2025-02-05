@@ -30,3 +30,8 @@ In the meantime, to use this, you can run
 3. git submodule update # for godot-cpp
 4. scons # compile
 5. cp -r godot_project/addons/libik \<your-project-path\>/addons
+
+### Demo
+[demo_libik.webm](https://github.com/user-attachments/assets/f0c0ee04-3cf1-4af9-b92a-091fd7bb769b)
+
+<sup>(Video sometimes doesn't load. Refreshing page often helps.)</sup>
