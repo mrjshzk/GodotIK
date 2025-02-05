@@ -17,7 +17,7 @@ public:
 	};
 	virtual PackedVector3Array apply(Vector3 p_parent_bone_pos, Vector3 p_bone_pos, Vector3 p_child_bone_pos, int direction);
 	int get_bone_idx();
-	void set_bone_idx(int p_bone_id);
+	void set_bone_idx(int p_bone_idx);
 
 protected:
 	static void _bind_methods();

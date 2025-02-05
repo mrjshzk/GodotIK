@@ -29,8 +29,8 @@ int GodotIKEffector::get_bone_idx() {
 	return bone_idx;
 }
 
-void GodotIKEffector::set_bone_idx(int p_bone_id) {
-	bone_idx = p_bone_id;
+void GodotIKEffector::set_bone_idx(int p_bone_idx) {
+	bone_idx = p_bone_idx;
 }
 
 int GodotIKEffector::get_chain_length() {

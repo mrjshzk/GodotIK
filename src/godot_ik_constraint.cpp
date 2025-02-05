@@ -21,8 +21,8 @@ int godot::GodotIKConstraint::get_bone_idx() {
 	return bone_idx;
 }
 
-void godot::GodotIKConstraint::set_bone_idx(int p_bone_id) {
-	bone_idx = p_bone_id;
+void godot::GodotIKConstraint::set_bone_idx(int p_bone_idx) {
+	bone_idx = p_bone_idx;
 }
 
 void godot::GodotIKConstraint::_bind_methods() {
