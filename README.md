@@ -20,3 +20,13 @@ This is the best implementation I could come up with. It's stable—at least as 
 For further reference, check out the `doc_classes/` directory; it tells it all.
 
 <sup>SceneTree example: Skeleton3D -> GodotIK -> [GodotIKEffectors] -> GodotIKConstraint</sup>
+
+### Getting started
+Binaries soon.
+
+In the meantime, to use this, you can run
+1. git clone
+2. git submodule init # for godot-cpp
+3. git submodule update # for godot-cpp
+4. scons # compile
+5. cp -r godot_project/addons/libik <your-project-path>/addons
