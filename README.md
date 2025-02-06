@@ -31,6 +31,8 @@ In the meantime, to use this, you can run
 4. scons # compile
 5. cp -r godot_project/addons/libik \<your-project-path\>/addons
 
+<sup> If you recently unsuccessfully cloned or tried to build the repository, it was probably because the godot-cpp submodule was configured to use the SSH origin, which you needed to set up. We have now switched to the HTTPS origin. To fix this, run git submodule sync followed by git submodule update. </sup>
+
 ### Demo
 [demo_libik.webm](https://github.com/user-attachments/assets/f0c0ee04-3cf1-4af9-b92a-091fd7bb769b)
 
