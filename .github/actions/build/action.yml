@@ -22,9 +22,12 @@ runs:
       uses: actions/cache@v4
       with:
         path: .scons-cache
-        key: ${{ runner.os }}-scons-cache-${{ hashFiles('**/*') }}
+        key: ${{ runner.os }}-scons-cache-${{ inputs.build_platform }}-${{ hashFiles('godot-cpp/**/*.cpp', 'godot-cpp/**/*.hpp', 'godot-cpp/**/*.h', 'godot-cpp/SConstruct') }}
         restore-keys: |
+          ${{ runner.os }}-scons-cache-${{ inputs.build_platform }}-
           ${{ runner.os }}-scons-cache-
+        enableCrossOsArchive: true
+        maxAge: 1 week
 
     - name: Install Android build dependencies
       if: inputs.build_platform == 'android'
@@ -72,15 +75,15 @@ runs:
       env:
         SCONS_CACHE_DIR: .scons-cache
       shell: bash
-      run: scons platform=${{ inputs.build_platform }}
-
-    - name: Save SCons cache directory
-      id: cache
-      if: steps.restore.outputs.cache-hit != 'true'
-      uses: actions/cache@v4
-      with:
-        path: .scons-cache
-        key: ${{ runner.os }}-scons-cache-${{ hashFiles('**/*') }}
+      run: |
+        # Show cache directory contents before build
+        ls -la .scons-cache || true
+        echo "Starting build with cache..."
+        # Run build with verbose output
+        scons platform=${{ inputs.build_platform }} --debug=explain
+        echo "Build completed. Cache contents:"
+        # Show cache directory contents after build
+        ls -la .scons-cache || true
 
     - name: Zip addons directory
       if: ${{ inputs.zipped == 'true' }}
