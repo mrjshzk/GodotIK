@@ -69,12 +69,26 @@ jobs:
       - name: Create release archive
         run: |
           cd release
-          zip -r ../godot-plugin-${{ github.ref_name }}.zip addons/
+          zip -r ../godot-libik-plugin-${{ github.ref_name }}.zip addons/
           
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: godot-plugin-${{ github.ref_name }}.zip
-          generate_release_notes: true
+        uses: actions/create-release@v1
+        id: create_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./godot-libik-plugin-${{ github.ref_name }}.zip
+          asset_name: godot-libik-plugin-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
