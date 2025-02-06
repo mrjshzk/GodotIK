@@ -30,7 +30,7 @@ For further reference, check out the `doc_classes/` directory; it tells it all.
 ### Getting started
 We have binaries!
 #### The easy way
-1. Download release https://github.com/monxa/GodotIK/releases/tag/v1.0.0
+1. Download release [https://github.com/monxa/GodotIK/releases](https://github.com/monxa/GodotIK/releases)
 2. Unpack and copy /addons into \<your-project-path\>
 
 #### The hard way (build it yourself)
