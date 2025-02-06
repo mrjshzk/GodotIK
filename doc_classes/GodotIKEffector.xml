@@ -1,57 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GodotIKEffector" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Defines the target for an IK chain's end effector.
+		Defines a single IK chain and positions its end point.
 	</brief_description>
 	<description>
-		GodotIKEffector represents the target position and orientation for the terminal bone in an IK chain.  
-		It allows developers to specify which bone should be controlled by the IK solver, adjust how many bones are affected, and configure the behavior of the chain's end.  
-
-		It must sit somewhere below a [GodotIK] node in the scene tree to function. Nesting is supported.
-
-		By setting the chain length and leaf behavior, you can fine-tune the balance between preserving existing transforms and applying full IK corrections.
-		Additionally, [GodotIKConstraint]s are supported, which are child nodes to [GodotIKEffector]s.
+		GodotIKEffector defines an IK chain by specifying which bone to control and the number of bones included in the chain. It sets the target position (and optionally rotation and scale) for the chain's end point. This node should be a (nested) child of a [GodotIK] node. Additionally, direct child nodes of type [GodotIKConstraint] can be added to impose constraints.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="bone_idx" type="int" setter="set_bone_idx" getter="get_bone_idx" default="0">
-			The index of the bone that this effector controls within the skeleton.
+			The index of the bone that this effector controls in the skeleton.
 		</member>
 		<member name="chain_length" type="int" setter="set_chain_length" getter="get_chain_length" default="2">
-			The number of bones in the IK chain that are influenced by this effector.  
-			A larger chain length will affect more bones during IK solving.
+			The number of bones in the IK chain influenced by this effector.
 		</member>
 		<member name="transform_mode" type="int" setter="set_leaf_behavior" getter="get_leaf_behavior" enum="GodotIKEffector.TransformMode" default="0">
-			Determines the leaf transform behavior after the chain. Behavior according to [enum TransformMode].
+			Determines how the end bone's transform is applied based on [enum TransformMode].
 		</member>
 	</members>
 	<signals>
 		<signal name="bone_idx_changed">
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Fired, when member [member bone_idx] changes.
+				Emitted when the [member bone_idx] value changes.
 			</description>
 		</signal>
 		<signal name="chain_length_changed">
 			<param index="0" name="chain_length" type="int" />
 			<description>
-				Fired, when member [member chain_length] changes.
+				Emitted when the [member chain_length] value changes.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="POSITION_ONLY" value="0" enum="TransformMode">
-			Only updates the target bone's position while preserving its original rotation and scale.
+			Updates only the target bone's position while preserving its original rotation and scale.
 		</constant>
 		<constant name="PRESERVE_ROTATION" value="1" enum="TransformMode">
-			Applies the effector's position, but preserves the bone’s local rotation and scale.
+			Applies the effector's position but retains the bone’s local rotation and scale.
 		</constant>
 		<constant name="STRAIGHTEN_CHAIN" value="2" enum="TransformMode">
-			Positions the target bone and then straightens the chain by adjusting the rotation relative to the parent bone.
+			Positions the target bone and straightens the chain by adjusting its rotation relative to the parent.
 		</constant>
 		<constant name="FULL_TRANSFORM" value="3" enum="TransformMode">
-			Applies the complete transform of the IKEffector node—position, rotation, and scale—to the target bone.
+			Applies the full transform of the IKEffector node - position, rotation, and scale-to the target bone.
 		</constant>
 	</constants>
 </class>

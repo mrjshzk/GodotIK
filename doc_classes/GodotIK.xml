@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GodotIK" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Provides a robust inverse kinematics solver for 3D skeletal animations.
+		Provides an efficient inverse kinematics solver for 3D skeletal animations.
 	</brief_description>
 	<description>
-		GodotIK is a flexible and high-performance inverse kinematics (IK) solver designed specifically for 3D skeletons.  
-		Extending SkeletonModifier3D, it employs the FABRIK IK algorithm to dynamically adjust bone positions and translates these to rotations, resulting in natural movement and smooth pose transitions.  
-		Developers can customize the IK process—such as by adjusting the iteration count—to balance solving accuracy with performance.  
-		GodotIK expects to have one or many [GodotIKEffector] children.
+		GodotIK is a high-performance inverse kinematics (IK) solver for 3D skeletons. It extends SkeletonModifier3D and uses the FABRIK algorithm to adjust bone positions and rotations, creating natural movement and smooth transitions. Developers can customize the IK process - for example, by changing the number of iterations - to balance accuracy and performance. GodotIK should have one or more [GodotIKEffector] children.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,14 +12,13 @@
 		<method name="get_positions">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns a PackedVector3Array containing the current positions of all bones. Positions are in Skeleton space.
+				Returns a PackedVector3Array of the current positions of all bones, measured in Skeleton space.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="iteration_count" type="int" setter="set_iteration_count" getter="get_iteration_count" default="8">
-			Specifies the number of iterations performed during the IK solving process.  
-			Higher values typically yield more accurate results but may impact performance, while lower values result in faster computation with reduced precision.
+			Sets the number of iterations during the IK solving process. Higher values provide more accurate results but may reduce performance, while lower values improve speed with less precision.
 		</member>
 	</members>
 </class>
