@@ -21,10 +21,19 @@ For further reference, check out the `doc_classes/` directory; it tells it all.
 
 <sup>SceneTree example: Skeleton3D -> GodotIK -> [GodotIKEffectors] -> GodotIKConstraint</sup>
 
-### Getting started
-Binaries soon.
 
-In the meantime, to use this, you can run
+### Demo
+[demo_libik.webm](https://github.com/user-attachments/assets/f0c0ee04-3cf1-4af9-b92a-091fd7bb769b)
+
+<sup>(Video sometimes doesn't load. Refreshing page often helps.)</sup>
+
+### Getting started
+We have binaries!
+#### The easy way
+1. Download release https://github.com/monxa/GodotIK/releases/tag/v1.0.0
+2. Unpack and copy /addons into \<your-project-path\>
+
+#### The hard way (build it yourself)
 1. git clone
 2. git submodule init # for godot-cpp
 3. git submodule update # for godot-cpp
@@ -32,8 +41,3 @@ In the meantime, to use this, you can run
 5. cp -r godot_project/addons/libik \<your-project-path\>/addons
 
 <sup> If you recently unsuccessfully cloned or tried to build the repository, it was probably because the godot-cpp submodule was configured to use the SSH origin, which you needed to set up. We have now switched to the HTTPS origin. To fix this, run git submodule sync followed by git submodule update. </sup>
-
-### Demo
-[demo_libik.webm](https://github.com/user-attachments/assets/f0c0ee04-3cf1-4af9-b92a-091fd7bb769b)
-
-<sup>(Video sometimes doesn't load. Refreshing page often helps.)</sup>
