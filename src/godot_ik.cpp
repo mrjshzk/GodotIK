@@ -103,6 +103,7 @@ void GodotIK::set_position_group(int p_idx_bone_in_group, const Vector3 &p_pos_b
 }
 
 void GodotIK::solve_backward() {
+	// TODO: Introduce a depth-based chain iteration strategy (look into git history, work had already begun on this)
 	for (IKChain &chain : chains) {
 		if (chain.bones.size() == 0) {
 			continue;
@@ -129,6 +130,7 @@ void GodotIK::solve_backward() {
 }
 
 void GodotIK::solve_forward() {
+	// TODO: Introduce a depth-based chain iteration strategy (look into git history, work had already begun on this)
 	for (IKChain &chain : chains) {
 		int root_idx = chain.bones.size() - 1;
 		if (root_idx >= 0 && chain.constraints[root_idx]) {
@@ -267,9 +269,6 @@ void godot::GodotIK::apply_positions() {
 			}
 		}
 	}
-}
-
-void godot::GodotIK::apply_effector_transforms() {
 }
 
 void godot::GodotIK::apply_constraint(const IKChain &p_chain, int p_idx_in_chain, GodotIKConstraint::Dir p_dir) {
@@ -481,62 +480,6 @@ void GodotIK::initialize_chains() {
 
 		chains.push_back(new_chain);
 	}
-
-	// Calculate bone depths for sorting
-
-	// Prepare to process chains in forward order
-	// Vector<int> chain_indices;
-	// chain_indices.resize(chains.size());
-	// for (int i = 0; i < chains.size(); i++) {
-	// 	chain_indices.write[i] = 0;
-	// }
-
-	// bool done_processing_chains = false;
-	// while (!done_processing_chains) {
-	// 	int best_depth = INFINITY;
-	// 	done_processing_chains = true;
-	// 	for (int ch = 0; ch < chains.size(); ++ch) {
-	// 		int chain_idx = chain_indices[ch];
-	// 		if (chain_indices[ch] >= chains[ch].bones.size()) {
-	// 			continue;
-	// 		}
-	// 		done_processing_chains = false;
-	// 		int bone_idx = chains[ch].bones[chain_idx];
-	// 		int depth = bone_depths[bone_idx];
-	// 		best_depth = MIN(best_depth, depth);
-	// 	}
-
-	// 	Vector<int> process_at_step;
-	// 	int selected_bone_idx = -1;
-	// 	for (int ch = 0; ch < chains.size(); ++ch) {
-	// 		if (chain_indices[ch] >= chains[ch].bones.size()) {
-	// 			continue;
-	// 		}
-	// 		int chain_idx = chain_indices[ch];
-	// 		int bone_idx = chains[ch].bones[chain_idx];
-	// 		if (selected_bone_idx == bone_idx) {
-	// 			ERR_FAIL_COND(process_at_step.size() == 0);
-	// 			++chain_indices.write[ch];
-	// 			process_at_step.push_back(ch);
-	// 			continue;
-	// 		}
-
-	// 		int depth = bone_depths[bone_idx];
-	// 		if (depth == best_depth) {
-	// 			ERR_FAIL_COND(process_at_step.size() > 0);
-	// 			process_at_step = { ch };
-	// 			++chain_indices.write[ch];
-	// 		}
-	// 	}
-	// 	chain_forward_processing_order.push_back(process_at_step);
-	// }
-	// for (int i = 0; i < chain_forward_processing_order.size(); i++){
-	// 	Vector<int> step = chain_forward_processing_order[i];
-	// 	godot::UtilityFunctions::print("-");
-	// 	for (int j = 0; j < step.size(); j++){
-	// 		UtilityFunctions::print(step[j]);
-	// 	}
-	// }
 }
 
 void godot::GodotIK::reset_effector_positions() {

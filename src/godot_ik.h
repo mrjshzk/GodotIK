@@ -90,8 +90,6 @@ private:
 
 	void apply_positions();
 
-	void apply_effector_transforms();
-
 	_ALWAYS_INLINE_ void apply_constraint(const IKChain &p_chain, int p_idx, GodotIKConstraint::Dir p_direction);
 
 	Vector<int> calculate_bone_depths(Skeleton3D *p_skeleton);
