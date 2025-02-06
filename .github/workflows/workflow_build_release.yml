@@ -69,7 +69,9 @@ jobs:
       - name: Create release archive
         run: |
           cd release
-          zip -r ../godot-libik-plugin-${{ github.ref_name }}.zip addons/
+          mkdir godot-ik-plugin
+          mv addons godot-ik-plugin/
+          zip -r ../godot-libik-plugin-${{ github.ref_name }}.zip godot-ik-plugin
           
       - name: Create GitHub Release
         uses: actions/create-release@v1
