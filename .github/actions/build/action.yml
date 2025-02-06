@@ -17,17 +17,23 @@ runs:
       with:
         submodules: recursive
 
-    - name: Restore SCons cache directory
-      id: restore
+    - name: Generate godot-cpp hash
+      id: hash-cpp
+      shell: bash
+      run: |
+        echo "Computing hash for godot-cpp files..."
+
+    - name: Restore build cache
+      id: restore-cache
       uses: actions/cache@v4
       with:
-        path: .scons-cache
-        key: ${{ runner.os }}-scons-cache-${{ inputs.build_platform }}-${{ hashFiles('godot-cpp/**/*.cpp', 'godot-cpp/**/*.hpp', 'godot-cpp/**/*.h', 'godot-cpp/SConstruct') }}
+        path: |
+          .scons-cache
+          godot-cpp
+        key: ${{ runner.os }}-scons-${{ inputs.build_platform }}-${{ hashFiles('godot-cpp/src/**/*.cpp', 'godot-cpp/gdextension/**/*', 'godot-cpp/include/**/*.hpp') }}
         restore-keys: |
-          ${{ runner.os }}-scons-cache-${{ inputs.build_platform }}-
-          ${{ runner.os }}-scons-cache-
-        enableCrossOsArchive: true
-        maxAge: 1 week
+          ${{ runner.os }}-scons-${{ inputs.build_platform }}-
+          ${{ runner.os }}-scons-
 
     - name: Install Android build dependencies
       if: inputs.build_platform == 'android'
@@ -73,17 +79,25 @@ runs:
 
     - name: Run SCons build for ${{ inputs.build_platform }}
       env:
-        SCONS_CACHE_DIR: .scons-cache
+        SCONS_CACHE: .scons-cache
       shell: bash
       run: |
-        # Show cache directory contents before build
-        ls -la .scons-cache || true
-        echo "Starting build with cache..."
-        # Run build with verbose output
-        scons platform=${{ inputs.build_platform }} --debug=explain
-        echo "Build completed. Cache contents:"
-        # Show cache directory contents after build
-        ls -la .scons-cache || true
+        echo "Cache restore status: ${{ steps.restore-cache.outputs.cache-hit }}"
+        cd godot-cpp
+        scons platform=${{ inputs.build_platform }} --cache-show
+        cd ..
+        scons platform=${{ inputs.build_platform }} --cache-show
+        echo "Cache after build:"
+        ls -la .scons-cache
+
+    - name: Save cache
+      uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: |
+          .scons-cache
+          godot-cpp
+        key: ${{ runner.os }}-scons-${{ inputs.build_platform }}-${{ hashFiles('godot-cpp/src/**/*.cpp', 'godot-cpp/gdextension/**/*', 'godot-cpp/include/**/*.hpp') }}
 
     - name: Zip addons directory
       if: ${{ inputs.zipped == 'true' }}
