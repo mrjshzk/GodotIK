@@ -188,6 +188,35 @@ void GodotIK::apply_positions() {
 
 		Quaternion additional_rotation = Quaternion(old_direction, new_direction);
 
+		// Handle singularity: Anti parallel vectors.
+		float dot = old_direction.dot(new_direction);
+		if (fabs(dot + 1.0f) < CMP_EPSILON) {
+			Vector3 chosen_axis;
+			
+			// Try to use parent's information if available.
+			int grand_parent_idx = -1;
+			if (parent_idx != identity_idx) {
+				grand_parent_idx = skeleton->get_bone_parent(parent_idx);
+			}
+			
+			if (grand_parent_idx != -1) {
+				// Use grandparent's position to influence the twist axis.
+				Vector3 parent_dir = positions[grand_parent_idx].direction_to(positions[parent_idx]);
+				chosen_axis = parent_dir.cross(old_direction);
+			}
+			
+			// If parent's data didn't yield a valid axis, fall back to a default arbitrary axis.
+			if (chosen_axis.length_squared() < CMP_EPSILON) {
+				chosen_axis = old_direction.cross(Vector3(1, 0, 0));
+				if (chosen_axis.length_squared() < CMP_EPSILON) {
+					chosen_axis = old_direction.cross(Vector3(0, 0, 1));
+				}
+			}
+			
+			chosen_axis = chosen_axis.normalized();
+			additional_rotation = Quaternion(chosen_axis, Math_PI); // 180° rotation.
+		}
+
 		Transform3D new_parent_transform = transforms[parent_idx];
 		Transform3D new_bone_transform = transforms[bone_idx];
 		new_bone_transform.origin = new_position_bone;
