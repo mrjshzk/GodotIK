@@ -50,13 +50,16 @@ public:
 	}
 	float get_time_iteration() { return time_iteration; }
 
+	void set_use_global_rotation_poles(bool p_use_global_rotation_poles);
+	bool get_use_global_rotation_poles();
+
 protected:
 	static void _bind_methods();
 
 private:
 	int iteration_count = 8;
 
-	bool initialized = false;
+	bool dirty = true;
 	// Bone length relative to parent. Root has no bone length.
 	Vector<float> bone_lengths;
 	HashMap<int, Vector<int>> grouped_by_position;
@@ -73,17 +76,20 @@ private:
 	//   initial_transforms[identity_idx] = Transform3D()  // or Transform3D.IDENTITY if defined
 	int identity_idx;
 
+	// this is mainly for compatibility with version 1.0.0:
+	bool use_global_rotation_poles = false;
+
 	Vector<IKChain> chains;
 	Vector<Vector<int>> chain_forward_processing_order;
 
-	void initialize();
+	void initialize_if_dirty();
 	void initialize_groups();
 	void initialize_bone_lengths();
 	void initialize_chains();
 	void set_effector_transforms_to_bones();
 
 	void initialize_deinitialize_connections();
-	void deinitialize();
+	void make_dirty();
 	Callable callable_deinitialize;
 
 	void solve_forward();
@@ -100,6 +106,7 @@ private:
 
 	float snap_length = 0.001;
 	float time_iteration = 0.;
+
 }; // ! class GodotIK
 
 } // namespace godot

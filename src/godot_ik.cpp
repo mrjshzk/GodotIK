@@ -21,7 +21,7 @@ using namespace godot;
 
 void GodotIK::_notification(int p_notification) {
 	if (p_notification == NOTIFICATION_READY) {
-		callable_deinitialize = callable_mp(this, &GodotIK::deinitialize);
+		callable_deinitialize = callable_mp(this, &GodotIK::make_dirty);
 		connect("child_order_changed", callable_deinitialize);
 
 		StringName name = "IK/" + get_parent()->get_name();
@@ -49,6 +49,12 @@ void GodotIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_positions"), &GodotIK::get_positions);
 
 	ClassDB::bind_method(D_METHOD("set_effector_transforms_to_bones"), &GodotIK::set_effector_transforms_to_bones);
+
+	ClassDB::bind_method(D_METHOD("set_use_global_rotation_poles", "global_rotation_poles"), &GodotIK::set_use_global_rotation_poles);
+	ClassDB::bind_method(D_METHOD("get_global_rotation_poles"), &GodotIK::get_use_global_rotation_poles);
+	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "use_global_rotation_poles"),
+			"set_use_global_rotation_poles",
+			"get_global_rotation_poles");
 }
 
 // ! Godot (Node) bindings
@@ -78,8 +84,8 @@ void GodotIK::_process_modification() {
 		positions.set(i, initial_transforms[i].origin);
 	}
 	positions.set(identity_idx, Vector3());
-	if (!initialized) {
-		initialize();
+	if (dirty) {
+		initialize_if_dirty();
 	}
 	// update effector positions
 	for (IKChain &chain : chains) {
@@ -164,68 +170,89 @@ void GodotIK::apply_positions() {
 		return;
 	}
 	Vector<Transform3D> transforms = initial_transforms.duplicate();
-	int skip = 0;
+
+	// -------- Apply Positions -----------
+	for (int bone_idx = 0; bone_idx < initial_transforms.size(); bone_idx++) {
+		transforms.write[bone_idx].origin = positions[bone_idx];
+	}
+
+	// ------- Apply Rotations ------------
+	const Transform3D identity_transform; // Default identity transform
+
 	for (int bone_idx : indices_by_depth) {
+		// Get parent's index; if none, use identity_idx.
 		int parent_idx = skeleton->get_bone_parent(bone_idx);
-		if (parent_idx < 0) {
-			parent_idx = identity_idx;
-		}
+		parent_idx = (parent_idx < 0) ? identity_idx : parent_idx;
 
-		if (!needs_processing[bone_idx] && !needs_processing[parent_idx]) {
-			skip++;
+		// If neither this bone nor its parent needs processing, skip it.
+		if (!needs_processing[bone_idx] && !needs_processing[parent_idx])
 			continue;
+
+		// Determine the grandparent index.
+		int grandparent_idx = identity_idx;
+		if (parent_idx != identity_idx) {
+			grandparent_idx = skeleton->get_bone_parent(parent_idx);
+			if (grandparent_idx < 0)
+				grandparent_idx = identity_idx;
 		}
-		const Transform3D &bone_transform = transforms[bone_idx];
 
-		Vector3 old_position_bone = initial_transforms[bone_idx].origin;
-		Vector3 old_position_parent = initial_transforms[parent_idx].origin;
+		// Cache the necessary transforms.
+		const Transform3D &gp_transform = transforms[grandparent_idx];
+		const Transform3D &gp_init_transform = initial_transforms[grandparent_idx];
 
-		Vector3 new_position_bone = positions[bone_idx];
-		Vector3 new_position_parent = positions[parent_idx];
+		// Retrieve positions from initial and current transforms.
+		const Vector3 &old_bone_pos = initial_transforms[bone_idx].origin;
+		const Vector3 &old_parent_pos = initial_transforms[parent_idx].origin;
+		const Vector3 &new_bone_pos = transforms[bone_idx].origin;
+		const Vector3 &new_parent_pos = transforms[parent_idx].origin;
 
-		Vector3 old_direction = old_position_parent.direction_to(old_position_bone);
-		Vector3 new_direction = new_position_parent.direction_to(new_position_bone);
+		// Compute the direction vectors (from parent to bone).
+		Vector3 old_direction = old_parent_pos.direction_to(old_bone_pos);
+		Vector3 new_direction = new_parent_pos.direction_to(new_bone_pos);
 
-		Quaternion additional_rotation = Quaternion(old_direction, new_direction);
+		// Compute the additional rotation for adjustment.
+		Quaternion additional_rotation;
+		if (use_global_rotation_poles) { // Old approach
+			additional_rotation = Quaternion(old_direction, new_direction);
+			// Handle singularity: Anti parallel vectors.
+			float dot = old_direction.dot(new_direction);
+			if (fabs(dot + 1.0f) < CMP_EPSILON) { // Old approach requires pole fix
+				Vector3 chosen_axis;
 
-		// Handle singularity: Anti parallel vectors.
-		float dot = old_direction.dot(new_direction);
-		if (fabs(dot + 1.0f) < CMP_EPSILON) {
-			Vector3 chosen_axis;
-			
-			// Try to use parent's information if available.
-			int grand_parent_idx = -1;
-			if (parent_idx != identity_idx) {
-				grand_parent_idx = skeleton->get_bone_parent(parent_idx);
-			}
-			
-			if (grand_parent_idx != -1) {
-				// Use grandparent's position to influence the twist axis.
-				Vector3 parent_dir = positions[grand_parent_idx].direction_to(positions[parent_idx]);
-				chosen_axis = parent_dir.cross(old_direction);
-			}
-			
-			// If parent's data didn't yield a valid axis, fall back to a default arbitrary axis.
-			if (chosen_axis.length_squared() < CMP_EPSILON) {
-				chosen_axis = old_direction.cross(Vector3(1, 0, 0));
-				if (chosen_axis.length_squared() < CMP_EPSILON) {
-					chosen_axis = old_direction.cross(Vector3(0, 0, 1));
+				// Try to use parent's information if available.
+				if (grandparent_idx != -1) {
+					// Use grandparent's position to influence the twist axis.
+					Vector3 parent_dir = positions[grandparent_idx].direction_to(positions[parent_idx]);
+					chosen_axis = parent_dir.cross(old_direction);
 				}
+
+				// If parent's data didn't yield a valid axis, fall back to a default arbitrary axis.
+				if (chosen_axis.length_squared() < CMP_EPSILON) {
+					chosen_axis = old_direction.cross(Vector3(1, 0, 0));
+					if (chosen_axis.length_squared() < CMP_EPSILON) {
+						chosen_axis = old_direction.cross(Vector3(0, 0, 1));
+					}
+				}
+
+				chosen_axis = chosen_axis.normalized();
+				additional_rotation = Quaternion(chosen_axis, Math_PI); // 180 deg rotation.
 			}
-			
-			chosen_axis = chosen_axis.normalized();
-			additional_rotation = Quaternion(chosen_axis, Math_PI); // 180° rotation.
+		} else { // New approach
+			// Transform directions into the grandparent's local space.
+			old_direction = gp_init_transform.basis.xform_inv(old_direction);
+			new_direction = gp_transform.basis.xform_inv(new_direction);
+			additional_rotation = Quaternion(old_direction, new_direction);
+			// Bring the rotation back into global space.
+			additional_rotation = gp_transform.basis * additional_rotation * gp_init_transform.basis.inverse();
 		}
 
-		Transform3D new_parent_transform = transforms[parent_idx];
-		Transform3D new_bone_transform = transforms[bone_idx];
-		new_bone_transform.origin = new_position_bone;
+		// Update the parent's transform with the computed rotation.
+		Transform3D parent_transform = transforms[parent_idx];
+		parent_transform.basis = additional_rotation * parent_transform.basis;
+		transforms.write[parent_idx] = parent_transform;
 
-		new_parent_transform.origin = positions[parent_idx];
-		new_parent_transform.basis = additional_rotation * new_parent_transform.basis;
-
-		transforms.write[parent_idx] = new_parent_transform;
-		transforms.write[bone_idx] = new_bone_transform;
+		// Ensure the identity index is kept at identity.
+		transforms.write[identity_idx] = identity_transform;
 	}
 
 	for (int bone_idx : indices_by_depth) {
@@ -351,14 +378,14 @@ void GodotIK::apply_constraint(const IKChain &p_chain, int p_idx_in_chain, Godot
 
 // ------ Initialization ------------- /
 
-void GodotIK::initialize() {
-	initialized = false;
+void GodotIK::initialize_if_dirty() {
+	dirty = false;
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
 	}
 	// Connect to bone_list_changed
-	Callable callable_initialize = callable_mp(this, &GodotIK::initialize);
+	Callable callable_initialize = callable_mp(this, &GodotIK::initialize_if_dirty);
 	if (!get_skeleton()->is_connected("bone_list_changed", callable_initialize)) {
 		get_skeleton()->connect("bone_list_changed", callable_initialize);
 	}
@@ -405,7 +432,7 @@ void GodotIK::initialize() {
 	}
 	initialize_deinitialize_connections();
 
-	initialized = true;
+	dirty = false;
 }
 
 void GodotIK::initialize_groups() {
@@ -538,8 +565,8 @@ void GodotIK::initialize_deinitialize_connections() { // TODO: rename maybe ? :D
 	}
 }
 
-void GodotIK::deinitialize() {
-	initialized = false;
+void GodotIK::make_dirty() {
+	dirty = true;
 }
 // ! Initialization
 
@@ -616,4 +643,12 @@ int GodotIK::get_iteration_count() const {
 
 bool GodotIK::compare_by_depth(int p_a, int p_b, const Vector<int> &p_depths) {
 	return p_depths[p_a] < p_depths[p_b];
+}
+
+void GodotIK::set_use_global_rotation_poles(bool p_use_global_rotation_poles) {
+	use_global_rotation_poles = p_use_global_rotation_poles;
+}
+
+bool GodotIK::get_use_global_rotation_poles() {
+	return use_global_rotation_poles;
 }
