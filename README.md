@@ -37,7 +37,7 @@ We have binaries!
 1. git clone
 2. git submodule init # for godot-cpp
 3. git submodule update # for godot-cpp
-4. scons # compile
+4. scons target=template_release # compile.
 5. cp -r godot_project/addons/libik \<your-project-path\>/addons
 
 <sup> If you recently unsuccessfully cloned or tried to build the repository, it was probably because the godot-cpp submodule was configured to use the SSH origin, which you needed to set up. We have now switched to the HTTPS origin. To fix this, run git submodule sync followed by git submodule update. </sup>
