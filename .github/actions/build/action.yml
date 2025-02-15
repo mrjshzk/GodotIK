@@ -84,9 +84,9 @@ runs:
       run: |
         echo "Cache restore status: ${{ steps.restore-cache.outputs.cache-hit }}"
         cd godot-cpp
-        scons platform=${{ inputs.build_platform }} --cache-show
+        scons target=template_release platform=${{ inputs.build_platform }} --cache-show
         cd ..
-        scons platform=${{ inputs.build_platform }} --cache-show
+        scons target=template_release platform=${{ inputs.build_platform }} --cache-show
         echo "Cache after build:"
         ls -la .scons-cache
 
