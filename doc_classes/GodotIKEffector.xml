@@ -8,6 +8,20 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_ik_controller" qualifiers="const">
+			<return type="GodotIK" />
+			<description>
+				Returns the IK controller associated with this node. The IK controller provides centralized access to the underlying skeleton and other IK-related properties.
+			</description>
+		</method>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton3D" />
+			<description>
+				Returns the Skeleton3D instance from the associated IK controller, or null if no IK controller is set.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="bone_idx" type="int" setter="set_bone_idx" getter="get_bone_idx" default="0">
 			The index of the bone that this effector controls in the skeleton.

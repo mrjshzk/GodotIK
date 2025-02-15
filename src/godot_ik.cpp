@@ -19,6 +19,23 @@ using namespace godot;
 
 // ----- Godot (Node) bindings -------
 
+void GodotIK::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_iteration_count", "iteration_count"), &GodotIK::set_iteration_count);
+	ClassDB::bind_method(D_METHOD("get_iteration_count"), &GodotIK::get_iteration_count);
+	ADD_PROPERTY(PropertyInfo(Variant::Type::INT, "iteration_count", PROPERTY_HINT_RANGE, "1, 32, 1"),
+			"set_iteration_count",
+			"get_iteration_count");
+	ClassDB::bind_method(D_METHOD("get_bone_position", "bone_idx"), &GodotIK::get_bone_position);
+
+	ClassDB::bind_method(D_METHOD("set_effector_transforms_to_bones"), &GodotIK::set_effector_transforms_to_bones);
+
+	ClassDB::bind_method(D_METHOD("set_use_global_rotation_poles", "global_rotation_poles"), &GodotIK::set_use_global_rotation_poles);
+	ClassDB::bind_method(D_METHOD("get_global_rotation_poles"), &GodotIK::get_use_global_rotation_poles);
+	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "use_global_rotation_poles"),
+			"set_use_global_rotation_poles",
+			"get_global_rotation_poles");
+}
+
 void GodotIK::_notification(int p_notification) {
 	if (p_notification == NOTIFICATION_READY) {
 		callable_deinitialize = callable_mp(this, &GodotIK::make_dirty);
@@ -40,22 +57,6 @@ PackedStringArray GodotIK::_get_configuration_warnings() const {
 	return result;
 }
 
-void GodotIK::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_iteration_count", "iteration_count"), &GodotIK::set_iteration_count);
-	ClassDB::bind_method(D_METHOD("get_iteration_count"), &GodotIK::get_iteration_count);
-	ADD_PROPERTY(PropertyInfo(Variant::Type::INT, "iteration_count", PROPERTY_HINT_RANGE, "1, 32, 1"),
-			"set_iteration_count",
-			"get_iteration_count");
-	ClassDB::bind_method(D_METHOD("get_positions"), &GodotIK::get_positions);
-
-	ClassDB::bind_method(D_METHOD("set_effector_transforms_to_bones"), &GodotIK::set_effector_transforms_to_bones);
-
-	ClassDB::bind_method(D_METHOD("set_use_global_rotation_poles", "global_rotation_poles"), &GodotIK::set_use_global_rotation_poles);
-	ClassDB::bind_method(D_METHOD("get_global_rotation_poles"), &GodotIK::get_use_global_rotation_poles);
-	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "use_global_rotation_poles"),
-			"set_use_global_rotation_poles",
-			"get_global_rotation_poles");
-}
 
 // ! Godot (Node) bindings
 
@@ -445,7 +446,6 @@ void GodotIK::initialize_if_dirty() {
 		}
 	}
 	initialize_deinitialize_connections();
-
 	dirty = false;
 }
 
@@ -512,7 +512,6 @@ void GodotIK::initialize_chains() {
 	}
 
 	// Collect all nested effectors
-	Vector<GodotIKEffector *> effector_list;
 	Vector<Node *> child_list = get_nested_children_dsf(this);
 
 	// Process each child if child is effector
@@ -550,9 +549,10 @@ void GodotIK::initialize_chains() {
 					continue;
 				}
 				new_chain.constraints.write[placement_in_chain] = constraint;
+				constraint->set_ik_controller(this);
 			}
 		}
-
+		effector->set_ik_controller(this);
 		chains.push_back(new_chain);
 	}
 }
@@ -616,7 +616,7 @@ Vector<int> GodotIK::calculate_bone_depths(Skeleton3D *p_skeleton) {
 	return depths;
 }
 
-Vector<Node *> GodotIK::get_nested_children_dsf(Node *base) {
+Vector<Node *> GodotIK::get_nested_children_dsf(Node *base) const {
 	Vector<Node *> child_list; // First in, first out through iteration -> BSF
 
 	for (int i = 0; i < base->get_child_count(); i++) {
@@ -663,6 +663,6 @@ void GodotIK::set_use_global_rotation_poles(bool p_use_global_rotation_poles) {
 	use_global_rotation_poles = p_use_global_rotation_poles;
 }
 
-bool GodotIK::get_use_global_rotation_poles() {
+bool GodotIK::get_use_global_rotation_poles() const {
 	return use_global_rotation_poles;
 }
