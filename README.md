@@ -30,7 +30,7 @@ For further reference, check out the `doc_classes/` directory; it tells it all.
 ### Getting started
 We have binaries!
 #### The easy way
-1. Download release [https://github.com/monxa/GodotIK/releases](https://github.com/monxa/GodotIK/releases)
+1. Grab the binaries [https://github.com/monxa/GodotIK/releases](https://github.com/monxa/GodotIK/releases)
 2. Unpack and copy /addons into \<your-project-path\>
 
 #### The hard way (build it yourself)
@@ -41,3 +41,17 @@ We have binaries!
 5. cp -r godot_project/addons/libik \<your-project-path\>/addons
 
 <sup> If you recently unsuccessfully cloned or tried to build the repository, it was probably because the godot-cpp submodule was configured to use the SSH origin, which you needed to set up. We have now switched to the HTTPS origin. To fix this, run git submodule sync followed by git submodule update. </sup>
+
+### Tradeoffs
+
+This solution uses FABRIK, a positional solver. Because it solves positions first, twist is dynamically calculated in a post-processing step. Positions translate into rotations, then into local transforms.
+
+Pros:
+- Extremely flexible and stable.
+- Fully customizable constraint interface: Overwrite solver behavior, limit rotations, smooth motion, introduce bone stretch, etc.
+
+Cons:
+- Constraints can’t apply twist, as it's inferred dynamically.
+- A pole bone-based alternative for twist is under consideration.
+
+I’ve tried to make this as easy to use as possible and am actively improving it. Contributions are welcome!
