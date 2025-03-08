@@ -24,13 +24,20 @@ public:
 	int get_chain_length() const;
 	void set_chain_length(int p_chain_length);
 
-	TransformMode get_leaf_behavior() const;
-	void set_leaf_behavior(TransformMode p_leaf_behavior);
+	void set_transform_mode(TransformMode p_transform_mode);
+	TransformMode get_transform_mode() const;
 
 	void set_ik_controller(GodotIK *p_ik_controller);
 	GodotIK *get_ik_controller() const;
 
 	Skeleton3D *get_skeleton() const;
+
+	bool has_one_pole = false;
+
+	void set_active(bool p_active);
+	bool is_active() const;
+
+	PackedStringArray _get_configuration_warnings() const override;
 
 protected:
 	static void _bind_methods();
@@ -40,9 +47,10 @@ private:
 	int chain_length = 2;
 	TransformMode transform_mode = TransformMode::POSITION_ONLY;
 	GodotIK *ik_controller = nullptr;
-
+	bool active = true;
 }; // ! class GodotIKEffector
 } //namespace godot
+
 VARIANT_ENUM_CAST(GodotIKEffector::TransformMode);
 
 #endif // ! GODOT_IK_EFFECTOR_H

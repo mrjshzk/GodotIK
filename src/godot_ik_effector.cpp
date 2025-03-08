@@ -11,6 +11,7 @@
 using namespace godot;
 
 void GodotIKEffector::_bind_methods() {
+	// TransformMode
 	BIND_ENUM_CONSTANT(POSITION_ONLY);
 	BIND_ENUM_CONSTANT(PRESERVE_ROTATION);
 	BIND_ENUM_CONSTANT(STRAIGHTEN_CHAIN);
@@ -24,9 +25,13 @@ void GodotIKEffector::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_chain_length"), &GodotIKEffector::get_chain_length);
 	ADD_PROPERTY(PropertyInfo(Variant::Type::INT, "chain_length", PROPERTY_HINT_RANGE, "1, 32, 1"), "set_chain_length", "get_chain_length");
 
-	ClassDB::bind_method(D_METHOD("set_leaf_behavior", "transform_mode"), &GodotIKEffector::set_leaf_behavior);
-	ClassDB::bind_method(D_METHOD("get_leaf_behavior"), &GodotIKEffector::get_leaf_behavior);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_mode", PROPERTY_HINT_ENUM, "Position Only, Preserve Rotation, Straighten Chain, Full Transform"), "set_leaf_behavior", "get_leaf_behavior");
+	ClassDB::bind_method(D_METHOD("set_transform_mode", "transform_mode"), &GodotIKEffector::set_transform_mode);
+	ClassDB::bind_method(D_METHOD("get_transform_mode"), &GodotIKEffector::get_transform_mode);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_mode", PROPERTY_HINT_ENUM, "Position Only, Preserve Rotation, Straighten Chain, Full Transform"), "set_transform_mode", "get_transform_mode");
+
+	ClassDB::bind_method(D_METHOD("set_active", "active"), &GodotIKEffector::set_active);
+	ClassDB::bind_method(D_METHOD("is_active"), &GodotIKEffector::is_active);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 
 	ADD_SIGNAL(MethodInfo("bone_idx_changed", PropertyInfo(Variant::Type::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("chain_length_changed", PropertyInfo(Variant::Type::INT, "chain_length")));
@@ -35,6 +40,8 @@ void GodotIKEffector::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_ik_controller"), &GodotIKEffector::get_ik_controller);
 }
+
+// Setters/Getters -------------------------
 
 int GodotIKEffector::get_bone_idx() const {
 	return bone_idx;
@@ -60,12 +67,12 @@ void GodotIKEffector::set_chain_length(int p_chain_length) {
 	}
 }
 
-GodotIKEffector::TransformMode GodotIKEffector::get_leaf_behavior() const {
+GodotIKEffector::TransformMode GodotIKEffector::get_transform_mode() const {
 	return transform_mode;
 }
 
-void GodotIKEffector::set_leaf_behavior(TransformMode p_leaf_behavior) {
-	transform_mode = p_leaf_behavior;
+void GodotIKEffector::set_transform_mode(TransformMode p_transform_mode) {
+	transform_mode = p_transform_mode;
 }
 
 void GodotIKEffector::set_ik_controller(GodotIK *p_ik_controller) {
@@ -81,4 +88,20 @@ Skeleton3D *GodotIKEffector::get_skeleton() const {
 		return nullptr;
 	}
 	return ik_controller->get_skeleton();
+}
+
+void godot::GodotIKEffector::set_active(bool p_active) {
+	active = p_active;
+}
+
+bool godot::GodotIKEffector::is_active() const {
+	return active;
+}
+
+PackedStringArray godot::GodotIKEffector::_get_configuration_warnings() const {
+	PackedStringArray result;
+	if (get_ik_controller() == nullptr) {
+		result.push_back("Needs to be parented by a GodotIK node. Can be nested.");
+	}
+	return result;
 }

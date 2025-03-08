@@ -1,6 +1,8 @@
 #include "godot_ik.h"
-#include "godot_ik_effector.h"
 #include "godot_ik_constraint.h"
+#include "godot_ik_effector.h"
+#include "godot_ik_root.h"
+
 #include <gdextension_interface.h>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
@@ -14,6 +16,7 @@ void initialize_lib_ikworks(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<GodotIK>();
 	ClassDB::register_class<GodotIKEffector>();
 	ClassDB::register_class<GodotIKConstraint>();
+	ClassDB::register_class<GodotIKRoot>();
 }
 
 void terminate_lib_ikworks(ModuleInitializationLevel p_level) {
