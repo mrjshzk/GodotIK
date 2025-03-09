@@ -17,7 +17,8 @@ This project provides four classes:
 
 - **`GodotIKRoot`**
   An alternative root node, under which effectors and constraints can be placed. Links into `GodotIK` through a `Nodepath` refernce.
-This is the best implementation I could come up with. It's stable—at least as stable as it gets with constraints.
+
+This is the best implementation I could come up with. It's stable - at least as stable as it gets with constraints.
 
 For further reference, check out the `doc_classes/` directory; it tells it all.
 
