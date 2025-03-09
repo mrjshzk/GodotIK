@@ -11,10 +11,10 @@ class_name PoleBoneConstraint extends GodotIKConstraint
 ## The pole direction vector that influences the bending plane.
 @export var pole_direction : Vector3
 
-## If true, the constraint applies when the IK chain moves forward.
+## If true, the constraint applies when the IK solver iterates forward.
 @export var forward : bool = true
 
-## If true, the constraint applies when the IK chain moves backward.
+## If true, the constraint applies when the IK solver iterates backward.
 @export var backward : bool = true
 
 func apply(

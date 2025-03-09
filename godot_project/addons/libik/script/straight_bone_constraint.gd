@@ -8,12 +8,11 @@ class_name StraightBoneConstraint extends GodotIKConstraint
 ## Whether the constraint is currently active.
 @export var active : bool = true
 
-## If true, the constraint applies when the IK chain moves forward.
+## If true, the constraint applies when the IK solver iterates forward.
 @export var forward : bool = true
 
-## If true, the constraint applies when the IK chain moves backward.
+## If true, the constraint applies when the IK solver iterates backward.
 @export var backward : bool = true
-
 
 ## This function overwrite modifies the mid-bone position to ensure it stays in a straight line
 ## between the parent and child bones.

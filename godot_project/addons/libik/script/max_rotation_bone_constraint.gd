@@ -5,10 +5,10 @@ class_name MaxRotationBoneConstraint extends GodotIKConstraint
 ## This constraint limits how much a bone can rotate from its initial orientation,
 ## ensuring it stays within a given angular range.
 
-## Whether the constraint applies when the IK chain moves forward.
+## Whether the constraint applies when the IK solver iterates forward.
 @export var forward : bool
 
-## Whether the constraint applies when the IK chain moves backward.
+## Whether the constraint applies when the IK solver iterates backward.
 @export var backward : bool
 
 ## Whether the constraint is currently active.
@@ -36,7 +36,7 @@ func apply(
 	var dir_bc = pos_bone.direction_to(pos_child_bone)
 
 	## Store the initial rotation on the first iteration.
-	if get_ik_controller() and get_ik_controller().get_current_iteration() == 0:
+	if get_ik_controller().get_current_iteration() == 0:
 		_initial_rotation = calculate_initial_rotation()
 
 	## Compute the current rotation and the deviation from the initial pose.
@@ -61,12 +61,9 @@ func apply(
 
 	return result
 
-## Computes the initial rotation of the bone.
-##
+
 ## This function calculates the initial relative rotation between the parent and child bones
 ## before any IK solving takes place. This serves as a reference for enforcing the rotation constraint.
-##
-## @return The initial relative rotation as a Quaternion.
 func calculate_initial_rotation() -> Quaternion:
 	var bone_parent = get_skeleton().get_bone_parent(bone_idx)
 	var bone_children = get_skeleton().get_bone_children(bone_idx)
