@@ -5,7 +5,13 @@ using namespace godot;
 
 #include <godot_cpp/classes/skeleton3d.hpp>
 
+
+
 void godot::GodotIKConstraint::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_bone_name"), &GodotIKConstraint::get_bone_name);
+	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_name"), &GodotIKConstraint::set_bone_name);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
+
 	ClassDB::bind_method(D_METHOD("get_bone_idx"), &GodotIKConstraint::get_bone_idx);
 	ClassDB::bind_method(D_METHOD("set_bone_idx", "bone_idx"), &GodotIKConstraint::set_bone_idx);
 	GDVIRTUAL_BIND(apply, "pos_parent_bone", "pos_bone", "pos_child_bone", "chain_direction");
@@ -32,6 +38,32 @@ PackedVector3Array GodotIKConstraint::apply(Vector3 p_pos_parent_bone, Vector3 p
 	return result;
 }
 
+void godot::GodotIKConstraint::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == StringName("bone_name")) {
+		Skeleton3D *skeleton = get_skeleton();
+		if (skeleton) {
+			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint_string = skeleton->get_concatenated_bone_names();
+		} else {
+			p_property.hint = PROPERTY_HINT_NONE;
+			p_property.hint_string = "";
+		}
+	}
+}
+
+String GodotIKConstraint::get_bone_name() const {
+	return bone_name;
+}
+
+void GodotIKConstraint::set_bone_name(String p_name) {
+	bone_name = p_name;
+	Skeleton3D *skeleton = get_skeleton();
+
+	if (skeleton) {
+		set_bone_idx(skeleton->find_bone(bone_name));
+	}
+}
+
 int GodotIKConstraint::get_bone_idx() const {
 	return bone_idx;
 }
@@ -39,6 +71,18 @@ int GodotIKConstraint::get_bone_idx() const {
 void GodotIKConstraint::set_bone_idx(int p_bone_idx) {
 	int old_bone_idx = bone_idx;
 	bone_idx = p_bone_idx;
+
+	Skeleton3D *skeleton = get_skeleton();
+
+	if (skeleton) {
+		if (bone_idx < 0 || bone_idx >= skeleton->get_bone_count()) {
+			WARN_PRINT("Bone index out of range! Cannot connect IK Constraint to node!");
+			bone_idx = 0;
+		} else {
+			bone_name = skeleton->get_bone_name(bone_idx);
+		}
+	}
+
 	if (old_bone_idx != bone_idx) {
 		emit_signal("bone_idx_changed", bone_idx);
 	}

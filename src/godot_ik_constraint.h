@@ -19,20 +19,27 @@ public:
 		FORWARD = 1
 	};
 	virtual PackedVector3Array apply(Vector3 p_parent_bone_pos, Vector3 p_bone_pos, Vector3 p_child_bone_pos, int direction);
+
+	String get_bone_name() const;
+	void set_bone_name(String p_name);
+
 	int get_bone_idx() const;
 	void set_bone_idx(int p_bone_idx);
 
 	void set_ik_controller(GodotIK *p_ik_controller);
 	GodotIK *get_ik_controller() const;
 
-	godot::Skeleton3D *get_skeleton() const;
+	Skeleton3D *get_skeleton() const;
 
 protected:
+	void _validate_property(PropertyInfo &p_property) const;
+
 	static void _bind_methods();
 	GDVIRTUAL4RC(PackedVector3Array, apply, Vector3, Vector3, Vector3, int);
 	bool apply_method_implemented = false;
 
 private:
+	String bone_name = "";
 	int bone_idx = 0;
 	GodotIK *ik_controller = nullptr;
 }; // ! class GodotIKConstraint
