@@ -5,7 +5,6 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/godot.hpp>
-
 #include <godot_cpp/classes/skeleton3d.hpp>
 
 using namespace godot;
@@ -16,6 +15,10 @@ void GodotIKEffector::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRESERVE_ROTATION);
 	BIND_ENUM_CONSTANT(STRAIGHTEN_CHAIN);
 	BIND_ENUM_CONSTANT(FULL_TRANSFORM);
+
+	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_name"), &GodotIKEffector::set_bone_name);
+	ClassDB::bind_method(D_METHOD("get_bone_name"), &GodotIKEffector::get_bone_name);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 
 	ClassDB::bind_method(D_METHOD("set_bone_idx", "bone_idx"), &GodotIKEffector::set_bone_idx);
 	ClassDB::bind_method(D_METHOD("get_bone_idx"), &GodotIKEffector::get_bone_idx);
@@ -41,7 +44,31 @@ void GodotIKEffector::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ik_controller"), &GodotIKEffector::get_ik_controller);
 }
 
+void GodotIKEffector::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == StringName("bone_name")) {
+		Skeleton3D *skeleton = get_skeleton();
+		if (skeleton) {
+			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint_string = skeleton->get_concatenated_bone_names();
+		} else {
+			p_property.hint = PROPERTY_HINT_NONE;
+			p_property.hint_string = "";
+		}
+	}
+}
+
 // Setters/Getters -------------------------
+void GodotIKEffector::set_bone_name(String p_name) {
+	bone_name = p_name;
+	Skeleton3D *skeleton = get_skeleton();
+	if (skeleton) {
+		set_bone_idx(skeleton->find_bone(bone_name));
+	}
+}
+
+String GodotIKEffector::get_bone_name() const {
+	return bone_name;
+}
 
 int GodotIKEffector::get_bone_idx() const {
 	return bone_idx;
@@ -50,6 +77,18 @@ int GodotIKEffector::get_bone_idx() const {
 void GodotIKEffector::set_bone_idx(int p_bone_idx) {
 	int prev_bone_idx = bone_idx;
 	bone_idx = p_bone_idx;
+
+	Skeleton3D *skeleton = get_skeleton();
+
+	if (skeleton) {
+		if (bone_idx < 0 || bone_idx >= skeleton->get_bone_count()) {
+			WARN_PRINT("Bone index out of range! Cannot connect IK Effector to node!");
+			bone_idx = 0;
+		} else {
+			bone_name = skeleton->get_bone_name(bone_idx);
+		}
+	}
+
 	if (prev_bone_idx != bone_idx) {
 		emit_signal("bone_idx_changed", bone_idx);
 	}
