@@ -18,6 +18,9 @@ public:
 		FULL_TRANSFORM // Apply this node3ds transform.
 	};
 
+	String get_bone_name() const;
+	void set_bone_name(String p_name);
+
 	int get_bone_idx() const;
 	void set_bone_idx(int p_bone_idx);
 
@@ -40,9 +43,12 @@ public:
 	PackedStringArray _get_configuration_warnings() const override;
 
 protected:
+	void _validate_property(PropertyInfo &p_property) const;
+
 	static void _bind_methods();
 
 private:
+	String bone_name = "";
 	int bone_idx = 0;
 	int chain_length = 2;
 	TransformMode transform_mode = TransformMode::POSITION_ONLY;
